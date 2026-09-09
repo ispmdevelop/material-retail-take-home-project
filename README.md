@@ -1,218 +1,98 @@
 # Material Retail
 
-A full-stack point-of-sale and inventory management system that helps merchants track stock and get alerts when items need reordering.
+A full-stack point-of-sale and inventory management system for merchants to track stock, manage products, and receive low-stock alerts.
 
-## Features
-
-- **Authentication** — Email/password with JWT, auto-creates organization on signup
-- **Products** — CRUD with feature/variant builder, default variant created automatically
-- **Product Variants** — Full management with inherited features, stock tracking, low-stock alerts
-- **Store** — Simulate purchases, auto-reduces stock, creates notifications when below threshold
-- **Notifications** — Real-time alert dialog for unread stock alerts, mark-as-read (individual + bulk)
-- **Profile** — View account info and decoded JWT payload
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19 + TypeScript, Vite, Material UI, Zustand, TanStack Query, React Router |
-| Backend | NestJS 12 + TypeScript, Prisma ORM, Passport JWT, bcrypt |
-| Database | PostgreSQL |
-| Auth | JWT (7-day expiry), bcrypt password hashing |
-
-## Getting Started (Local Development)
+## Running Locally
 
 ### Prerequisites
 
 - Node.js 24+
 - Docker + Docker Compose
 
-### 1. Start the Database
+### Quick Start
 
 ```bash
+# 1. Start PostgreSQL
 make up
-```
 
-This starts PostgreSQL on port 5432.
-
-### 2. Install Dependencies & Generate Prisma Client
-
-```bash
+# 2. Install dependencies and generate Prisma client
 make install
-```
 
-### 3. Seed the Database
+# 3. Push schema and seed demo data
+cd api && npx prisma db push && npm run seed
 
-```bash
-make seed
-```
-
-Creates demo data for two merchants with products, variants, and notifications.
-
-**Demo accounts** (password: `password123`):
-- `ashley@aquariuscosmetics.com` — Aquarius Cosmetics (nail polish store)
-- `david@mountainhouse.com` — Mountain House (furniture retailer)
-
-### 4. Start the Servers
-
-```bash
+# 4. Start both servers
 make dev
 ```
 
-- **Backend**: http://localhost:3000 (API + serves UI in production)
-- **Frontend**: http://localhost:5173 (Vite dev server with HMR)
+- **Frontend**: http://localhost:5173 (Vite dev server, proxies `/api` to backend)
+- **Backend**: http://localhost:3000
 
-> The Vite dev server proxies API calls to the backend automatically. In production, the NestJS app serves the built React app from its `public/` folder.
+**Demo accounts** (password: `password123`):
+- `ashley@gmail.com` — Aquarius Cosmetics
+- `david@gmail.com` — Mountain House
 
-### Manual Commands
-
-```bash
-# Start API only
-cd api && npm run start:dev
-
-# Start UI only
-cd ui && npm run dev
-
-# Run database migrations
-cd api && npx prisma db push
-
-# Seed data
-cd api && npm run seed
-```
-
-## Building for Production
-
-### Build UI and Copy to Backend
+### Docker Deployment
 
 ```bash
-make build
-```
-
-This compiles the React app and copies the output to `api/public/`. The NestJS app then serves it as static assets.
-
-### Build & Run Backend
-
-```bash
-cd api && npm run build && npm run start:prod
-```
-
-## Deployment
-
-### Railway
-
-Railway will auto-inject environment variables. Required:
-
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `JWT_SECRET` | Secret key for JWT signing |
-
-The `Dockerfile` handles multi-stage builds (UI + API) and auto-runs `prisma db push` on startup.
-
-### Docker (Generic / ECS / EC2)
-
-```bash
-# Build image
 docker build -t material-retail .
-
-# Run with env vars
 docker run -p 3000:3000 \
   -e DATABASE_URL="postgresql://user:pass@host:5432/db" \
   -e JWT_SECRET="your-secret" \
   material-retail
 ```
 
-### Docker Compose (Self-Hosted)
+The single container serves both the API and the React app. No CORS or separate frontend hosting needed.
 
-A full `docker-compose.yml` is provided at the root for running PostgreSQL. For a full production setup with the app container, add:
+## Technology Choices
 
-```yaml
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      DATABASE_URL: postgresql://material:material_secret@postgres:5432/material_retail
-      JWT_SECRET: your-secret-here
-    depends_on:
-      postgres:
-        condition: service_healthy
-```
+**Why NestJS + React SPA over Next.js?**
 
-## API Endpoints
+Next.js was the initial thought, but NestJS offers a more structured backend framework that's easier to deploy on any infrastructure without sacrificing capabilities. By serving the React SPA as static files from NestJS, the entire application runs behind a single host — eliminating CORS configuration, SSL duplication, and deployment complexity on platforms like Railway.
 
-### Auth
-| Method | Path | Description |
-|--------|------|-------------|
-|  POST | `/api/auth/signup` | Register user + auto-create organization |
-|  POST | `/api/auth/login` | Login with email/password |
+React was chosen over a meta-framework for the frontend because it's lightweight, familiar, and fully sufficient for an internal dashboard where SEO is not a concern.
 
-### Products
-| Method | Path | Description |
-|--------|------|-------------|
-|  GET | `/api/products` | List all products (org-scoped) |
-|  GET | `/api/products/:id` | Get single product |
-|  POST | `/api/products` | Create product + default variant |
-| PUT | `/api/products/:id` | Update product |
-|  DELETE | `/api/products/:id` | Delete product + all variants |
+**Other choices:**
+- **Prisma** for type-safe database access
+- **Material UI** for consistent, accessible components
+- **Zustand + TanStack Query** for lightweight state management and server-state caching
+- **PostgreSQL** as the relational database
 
-### Product Items (Variants)
-| Method | Path | Description |
-|--------|------|-------------|
-|  GET | `/api/product-items?productId=...` | List variants for a product |
-|  GET | `/api/product-items/:id` | Get single variant |
-|  POST | `/api/product-items` | Create variant |
-| PUT | `/api/product-items/:id` | Update variant |
-|  DELETE | `/api/product-items/:id` | Delete variant |
+## AI Usage
 
-### Store
-| Method | Path | Description |
-|--------|------|-------------|
-|  GET | `/api/store/items` | List all product items (flattened) |
-|  POST | `/api/store/purchase` | Purchase items (reduces stock) |
+This project was built using **Opencode with Qwen 3.6 Plus**. I prefer open models for personal projects and quick iterations, though I have extensive experience with Claude as well.
 
-### Notifications
-| Method | Path | Description |
-|--------|------|-------------|
-|  GET | `/api/notifications` | List all notifications |
-|  PATCH | `/api/notifications/:id/read` | Mark single as read |
-|  PATCH | `/api/notifications/mark-all-read` | Mark all as read |
+**How I used AI:** Heavy pushback was required at the start. I needed to establish the architecture, library choices, folder structure, and coding standards I prefer — the AI doesn't know my preferences until I communicate them. Once a few modules were created, the AI became much more effective at generating code that followed the existing patterns. The sweet spot is: architect and set conventions yourself, let AI accelerate the repetitive work within those guardrails.
 
-All endpoints require `Authorization: Bearer <token>`.
+## Assumptions & Trade-offs
 
-## Project Structure
+Several assumptions were made due to time constraints:
 
-```
-material-retail-take-home-project/
-├── api/                          # NestJS backend
-│   ├── src/
-│   │   ├── auth/                 # Authentication module
-│   │   ├── product/              # Products CRUD
-│   │   ├── product-item/         # Product variants CRUD
-│   │   ├── store/                # Purchase flow
-│   │   ├── notifications/        # Notifications
-│   │   ├── prisma.service.ts     # Global Prisma service
-│   │   └── prisma.module.ts      # Global Prisma module
-│   └── prisma/
-│       ├── schema.prisma         # Database schema
-│       └── seed.ts               # Seed data
-├── ui/                           # React frontend
-│   ├── src/
-│   │   ├── components/           # Shared components (Sidebar)
-│   │   ├── layouts/              # AuthLayout, AppLayout
-│   │   ├── pages/                # Route pages
-│   │   ├── modules/              # Feature modules
-│   │   │   ├── auth/             # Auth forms, hooks, store
-│   │   │   ├── product/          # Product CRUD
-│   │   │   ├── product-item/     # Variant CRUD
-│   │   │   ├── store/            # Store/purchase
-│   │   │   └── notifications/    # Notifications
-│   │   ├── ui/                   # Generic UI components
-│   │   ├── lib/                  # API client, utilities
-│   │   └── theme.ts              # MUI theme
-│   └── public/                   # Static assets
-├── docker-compose.yml            # PostgreSQL service
-├── Dockerfile                    # Multi-stage build for deployment
-└── Makefile                      # Common commands
-```
+- **Single organization per user** — Users can only belong to one organization. A real system would need a many-to-many relationship with role-based access.
+- **Owner-only organization** — No team members, no roles, no permissions hierarchy. The owner is the only user.
+- **Product variants model** — I chose a flexible JSON-based variant system. A more rigorous inventory system would differentiate between serialized and non-serialized items, track individual units, and handle purchase orders.
+- **Image handling** — Product images are not implemented. In production, I'd use S3 or a CDN for content delivery.
+- **SEO** — React SPA is not ideal for SEO. If this were a customer-facing storefront, Next.js or SSR would be the right choice.
+- **Purchase simulation** — The checkout flow is a simple stock reduction. Real commerce needs order management, payment processing, and fulfillment tracking.
+
+**Questions I'd ask in a real project:**
+1. Do users need to belong to multiple organizations with different roles?
+2. What permission model is needed — predefined roles or custom role-permission assignments?
+3. How important is SEO? Does this need to be customer-facing or purely internal?
+4. What's the expected product catalog size? This affects search, pagination, and image strategy.
+5. Is inventory serialized (tracking individual units) or bulk quantity?
+6. What notification channels are needed — email, SMS, push, in-app only?
+
+The answers to these would significantly change the database schema, API design, auth layer, and frontend architecture.
+
+## What's Next
+
+**With more time, I'd prioritize based on user feedback — which features are requested most often and which deliver the highest value.** Specific additions:
+
+- **Email/SMS notifications** — Low-stock alerts delivered to phone, not just in-app banners that can feel intrusive
+- **Automatic reorder** — System detects low stock and auto-places orders, or sends a one-click approval link
+- **Product categories** — Organize products for easier browsing and searching
+- **Product image CDN** — S3-backed image delivery with optimization
+- **Accessibility themes** — Font size controls and dark/light mode for users in different environments
+- **Configurable notification settings** — Let users control alert frequency and channels instead of mandatory popups
+- **Order management** — Full purchase lifecycle with order history, returns, and supplier integration
