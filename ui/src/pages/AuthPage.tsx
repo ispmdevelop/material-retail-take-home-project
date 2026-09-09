@@ -21,7 +21,7 @@ export function AuthPage() {
         <Tab label="Sign up" />
       </Tabs>
 
-      {activeTab === 0 ? <LoginForm /> : <SignUpForm />}
+      {activeTab === 0 ? <LoginForm onToggle={() => setActiveTab(1)} /> : <SignUpForm onToggle={() => setActiveTab(0)} />}
     </Box>
   );
 }

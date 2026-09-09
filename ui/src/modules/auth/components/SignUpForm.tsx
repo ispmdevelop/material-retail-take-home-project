@@ -14,7 +14,7 @@ import { useSnackbar } from 'notistack';
 import { useSignUp } from '../hooks/useSignUp';
 import { useAuthStore } from '../store/authStore';
 
-export function SignUpForm() {
+export function SignUpForm({ onToggle }: { onToggle: () => void }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -100,7 +100,7 @@ export function SignUpForm() {
 
       <Typography variant="body2" sx={{ textAlign: 'center' }}>
         Already have an account?{' '}
-        <Link component={RouterLink} to="/auth" underline="hover">
+        <Link component="button" onClick={onToggle} sx={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}>
           Sign in
         </Link>
       </Typography>

@@ -24,6 +24,8 @@ make up
 # 2. Install dependencies and generate Prisma client
 make install
 
+# Make sure you have a `.env` file in `api/` with the required variables (see `api/.env.example`)
+
 # 3. Push schema and seed demo data
 cd api && npx prisma db push && npm run seed
 
