@@ -30,7 +30,7 @@ interface FeatureRow {
 }
 
 interface CreateProductFormProps {
-  onSubmit: (data: { name: string; description?: string; price: number; stock: number; stockAlertBelow: number }) => void;
+  onSubmit: (data: { name: string; description?: string; price: number; stock: number; stockAlertBelow: number; variants: Record<string, string> }) => void;
   isPending: boolean;
 }
 
@@ -61,12 +61,19 @@ export function CreateProductForm({ onSubmit, isPending }: CreateProductFormProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const variants: Record<string, string> = {};
+    for (const row of features) {
+      if (row.key.trim() && row.value.trim()) {
+        variants[row.key.trim()] = row.value.trim();
+      }
+    }
     onSubmit({
       name,
       description: description || undefined,
       price: parseFloat(price),
       stock: parseInt(stock, 10),
       stockAlertBelow: enableAlert ? parseInt(stockAlertBelow, 10) : 0,
+      variants,
     });
   };
 

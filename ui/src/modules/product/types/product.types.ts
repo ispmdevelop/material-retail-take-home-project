@@ -13,6 +13,7 @@ export interface CreateProductDto {
   price: number;
   stock: number;
   stockAlertBelow: number;
+  variants?: Record<string, string>;
 }
 
 export interface UpdateProductDto {

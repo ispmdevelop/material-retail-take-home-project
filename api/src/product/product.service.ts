@@ -47,6 +47,7 @@ export class ProductService {
             price: dto.price,
             stock: dto.stock,
             stockAlertBelow: dto.stockAlertBelow,
+            variants: dto.variants ?? {},
             organizationId,
           },
         },
