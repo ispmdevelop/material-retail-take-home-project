@@ -13,7 +13,7 @@ FROM node:24-alpine AS api-builder
 WORKDIR /app/api
 
 COPY api/package*.json ./
-RUN npm ci --production
+RUN npm ci
 
 COPY api/ ./
 
