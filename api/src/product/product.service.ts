@@ -4,7 +4,7 @@ import { CreateProductDto, UpdateProductDto } from './dto/product.dto.js';
 
 @Injectable()
 export class ProductService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async findAll(organizationId: string) {
     return this.prisma.product.findMany({
@@ -56,6 +56,20 @@ export class ProductService {
         items: true,
       },
     });
+
+    const item = product.items[0];
+    if (item.stockAlertBelow > 0 && item.stock <= item.stockAlertBelow) {
+      await this.prisma.notification.create({
+        data: {
+          title: 'Low stock alert',
+          description: `"${item.name}" stock is at ${item.stock} (threshold: ${item.stockAlertBelow})`,
+          action: 'restock',
+          isSeenOnApp: false,
+          isEmailSent: false,
+          organizationId,
+        },
+      });
+    }
 
     return product;
   }

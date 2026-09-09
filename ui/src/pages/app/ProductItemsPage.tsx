@@ -63,6 +63,7 @@ export function ProductItemsPage() {
     create.mutate({ productId: productId!, ...data }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['product-items', productId] });
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
         enqueueSnackbar('Variant created', { variant: 'success' });
         handleCloseModal();
       },
@@ -76,6 +77,7 @@ export function ProductItemsPage() {
     update.mutate(data, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['product-items', productId] });
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
         enqueueSnackbar('Variant updated', { variant: 'success' });
         handleCloseModal();
       },

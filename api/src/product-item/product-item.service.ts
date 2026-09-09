@@ -55,7 +55,7 @@ export class ProductItemService {
       throw new ForbiddenException('Access denied');
     }
 
-    return this.prisma.productItem.create({
+    const created = await this.prisma.productItem.create({
       data: {
         name: dto.name,
         price: dto.price,
@@ -66,6 +66,21 @@ export class ProductItemService {
         organizationId,
       },
     });
+
+    if (created.stockAlertBelow > 0 && created.stock <= created.stockAlertBelow) {
+      await this.prisma.notification.create({
+        data: {
+          title: 'Low stock alert',
+          description: `"${created.name}" stock is at ${created.stock} (threshold: ${created.stockAlertBelow})`,
+          action: 'restock',
+          isSeenOnApp: false,
+          isEmailSent: false,
+          organizationId,
+        },
+      });
+    }
+
+    return created;
   }
 
   async update(id: string, organizationId: string, dto: UpdateProductItemDto) {
@@ -88,10 +103,25 @@ export class ProductItemService {
     if (dto.stock !== undefined) data.stock = dto.stock;
     if (dto.stockAlertBelow !== undefined) data.stockAlertBelow = dto.stockAlertBelow;
 
-    return this.prisma.productItem.update({
+    const updated = await this.prisma.productItem.update({
       where: { id },
       data,
     });
+
+    if (updated.stockAlertBelow > 0 && updated.stock <= updated.stockAlertBelow) {
+      await this.prisma.notification.create({
+        data: {
+          title: 'Low stock alert',
+          description: `"${updated.name}" stock is at ${updated.stock} (threshold: ${updated.stockAlertBelow})`,
+          action: 'restock',
+          isSeenOnApp: false,
+          isEmailSent: false,
+          organizationId,
+        },
+      });
+    }
+
+    return updated;
   }
 
   async remove(id: string, organizationId: string) {

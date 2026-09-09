@@ -52,10 +52,11 @@ export function ProductsPage() {
     setSelectedProduct(null);
   };
 
-  const handleCreate = (data: { name: string; description?: string; price: number; stock: number; stockAlertBelow: number }) => {
+  const handleCreate = (data: { name: string; description?: string; price: number; stock: number; stockAlertBelow: number; variants?: Record<string, string> }) => {
     create.mutate(data, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['products'] });
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
         enqueueSnackbar('Product created', { variant: 'success' });
         handleCloseModal();
       },

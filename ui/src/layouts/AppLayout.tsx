@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { Box } from '@mui/material';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,6 +16,16 @@ export function AppLayout() {
 
   const unreadCount = notifications.filter((n) => !n.isSeenOnApp).length;
   const onNotificationsPage = location.pathname === '/app/notifications';
+
+  const [showAlert, setShowAlert] = useState(false);
+  const prevUnreadRef = useRef(0);
+
+  useEffect(() => {
+    if (unreadCount > 0 && unreadCount !== prevUnreadRef.current && !onNotificationsPage) {
+      setShowAlert(true);
+    }
+    prevUnreadRef.current = unreadCount;
+  }, [unreadCount, onNotificationsPage]);
 
   const handleMarkAllRead = () => {
     markAllAsRead.mutate(undefined, {
@@ -38,16 +49,14 @@ export function AppLayout() {
         <Outlet />
       </Box>
 
-      {!onNotificationsPage && unreadCount > 0 && (
-        <NotificationAlert
-          open={unreadCount > 0}
-          notifications={notifications}
-          onClose={() => {}}
-          onViewAll={() => navigate('/app/notifications')}
-          onMarkAllRead={handleMarkAllRead}
-          isPending={markAllAsRead.isPending}
-        />
-      )}
+      <NotificationAlert
+        open={showAlert}
+        notifications={notifications}
+        onClose={() => setShowAlert(false)}
+        onViewAll={() => { setShowAlert(false); navigate('/app/notifications'); }}
+        onMarkAllRead={() => { handleMarkAllRead(); setShowAlert(false); }}
+        isPending={markAllAsRead.isPending}
+      />
     </Box>
   );
 }
