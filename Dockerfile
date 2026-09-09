@@ -19,6 +19,8 @@ COPY api/ ./
 
 COPY --from=ui-builder /app/ui/dist ./public
 
+RUN npx prisma generate
+
 RUN npx nest build
 
 FROM node:24-alpine AS runner
@@ -33,8 +35,6 @@ COPY --from=api-builder /app/api/prisma ./prisma
 
 ENV NODE_ENV=production
 ENV UI_PATH=./public
-
-RUN npx prisma generate
 
 EXPOSE 3000
 
