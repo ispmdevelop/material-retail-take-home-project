@@ -2,6 +2,12 @@
 
 A full-stack point-of-sale and inventory management system for merchants to track stock, manage products, and receive low-stock alerts.
 
+**Live Demo**: https://material-retail-take-home-project-production.up.railway.app/auth
+
+**Test accounts** (password: `password123`):
+- `ashley@gmail.com` — Aquarius Cosmetics
+- `david@gmail.com` — Mountain House
+
 ## Running Locally
 
 ### Prerequisites
@@ -27,10 +33,6 @@ make dev
 
 - **Frontend**: http://localhost:5173 (Vite dev server, proxies `/api` to backend)
 - **Backend**: http://localhost:3000
-
-**Demo accounts** (password: `password123`):
-- `ashley@gmail.com` — Aquarius Cosmetics
-- `david@gmail.com` — Mountain House
 
 ### Docker Deployment
 
