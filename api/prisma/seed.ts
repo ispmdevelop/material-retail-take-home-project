@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -335,7 +336,7 @@ async function main() {
     console.log(`Created ${allItems.length} product items`);
     console.log(`Created ${notifications.length} notifications`);
     console.log('Seed data complete.');
-  });
+  }, { timeout: 30000 });
 }
 
 main()
